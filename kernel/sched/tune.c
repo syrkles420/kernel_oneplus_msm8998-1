@@ -688,41 +688,6 @@ int schedtune_task_boost(struct task_struct *p)
 	return task_boost;
 }
 
-int schedtune_prefer_idle(struct task_struct *p)
-{
-	struct schedtune *st;
-	int prefer_idle;
-
-	if (!unlikely(schedtune_initialized))
-		return 0;
-
-	/* Get prefer_idle value */
-	rcu_read_lock();
-	st = task_schedtune(p);
-	prefer_idle = st->prefer_idle;
-	rcu_read_unlock();
-
-	return prefer_idle;
-}
-
-static u64
-prefer_idle_read(struct cgroup_subsys_state *css, struct cftype *cft)
-{
-	struct schedtune *st = css_st(css);
-
-	return st->prefer_idle;
-}
-
-static int
-prefer_idle_write(struct cgroup_subsys_state *css, struct cftype *cft,
-	    u64 prefer_idle)
-{
-	struct schedtune *st = css_st(css);
-	st->prefer_idle = prefer_idle;
-
-	return 0;
-}
-
 static s64
 boost_read(struct cgroup_subsys_state *css, struct cftype *cft)
 {
@@ -789,17 +754,6 @@ static struct cftype files[] = {
 		.name = "boost",
 		.read_s64 = boost_read,
 		.write_s64 = boost_write,
-	},
-	{
-		.name = "prefer_idle",
-		.read_u64 = prefer_idle_read,
-		.write_u64 = prefer_idle_write,
-	},
-#ifdef CONFIG_SCHED_HMP
-	{
-		.name = "sched_boost_no_override",
-		.read_u64 = sched_boost_override_read,
-		.write_u64 = sched_boost_override_write,
 	},
 	{
 		.name = "sched_boost_enabled",
